@@ -71,3 +71,4 @@ build/
 
 # Flutter generated files
 example/.flutter-plugins-dependencies
+pubspec.lock
