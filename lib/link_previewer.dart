@@ -69,9 +69,6 @@ class _LinkPreviewer extends State<LinkPreviewer> {
   void initState() {
     super.initState();
     _link = widget.link.trim();
-    if (_link.startsWith("https")) {
-      _link = "http" + _link.split("https")[1];
-    }
     _fetchData();
   }
 
