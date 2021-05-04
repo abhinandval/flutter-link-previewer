@@ -10,11 +10,8 @@ import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
 
 part 'package:link_previewer/content_direction.dart';
-
 part 'package:link_previewer/horizontal_link_view.dart';
-
 part 'package:link_previewer/vertical_link_preview.dart';
-
 part 'parser/web_page_parser.dart';
 
 class LinkPreviewer extends StatefulWidget {
