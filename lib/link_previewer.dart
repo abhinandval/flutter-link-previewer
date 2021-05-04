@@ -30,9 +30,13 @@ class LinkPreviewer extends StatefulWidget {
     this.showTitle = true,
     this.showBody = true,
     this.direction = ContentDirection.horizontal,
-    this.bodyTextOverflow,
+    TextOverflow? bodyTextOverflow,
     this.bodyMaxLines,
-  }) : super(key: key);
+  })  : this.bodyTextOverflow = bodyTextOverflow ??
+            (direction == ContentDirection.horizontal
+                ? TextOverflow.ellipsis
+                : TextOverflow.fade),
+        super(key: key);
 
   final String link;
   final double? titleFontSize;
@@ -47,7 +51,7 @@ class LinkPreviewer extends StatefulWidget {
   final Widget? placeholder;
   final bool showTitle;
   final bool showBody;
-  final TextOverflow? bodyTextOverflow;
+  final TextOverflow bodyTextOverflow;
   final int? bodyMaxLines;
 
   @override
@@ -55,9 +59,10 @@ class LinkPreviewer extends StatefulWidget {
 }
 
 class _LinkPreviewer extends State<LinkPreviewer> {
-  late final Map _metaData;
-  late final double _height;
-  late final String _link;
+  late String _link;
+  late double _height;
+
+  Map _metaData = {};
   bool _failedToLoadImage = false;
 
   @override
@@ -129,12 +134,11 @@ class _LinkPreviewer extends State<LinkPreviewer> {
 
   @override
   Widget build(BuildContext context) {
-    double _height = _computeHeight(MediaQuery.of(context).size.height);
+    _height = _computeHeight(MediaQuery.of(context).size.height);
 
     return _metaData.isEmpty
-        ? widget.placeholder == null
-            ? _buildPlaceHolder(widget.defaultPlaceholderColor, _height)
-            : widget.placeholder!
+        ? widget.placeholder ??
+            _buildPlaceHolder(widget.defaultPlaceholderColor, _height)
         : _buildLinkContainer();
   }
 
@@ -206,7 +210,7 @@ class _LinkPreviewer extends State<LinkPreviewer> {
         onTap: onTap,
         showTitle: showTitle,
         showBody: showBody,
-        bodyTextOverflow: widget.bodyTextOverflow!,
+        bodyTextOverflow: widget.bodyTextOverflow,
         bodyMaxLines: widget.bodyMaxLines,
         titleTextColor: widget.titleTextColor,
         bodyTextColor: widget.bodyTextColor,
@@ -223,7 +227,7 @@ class _LinkPreviewer extends State<LinkPreviewer> {
         onTap: onTap,
         showTitle: showTitle,
         showBody: showBody,
-        bodyTextOverflow: widget.bodyTextOverflow!,
+        bodyTextOverflow: widget.bodyTextOverflow,
         bodyMaxLines: widget.bodyMaxLines,
         titleTextColor: widget.titleTextColor,
         bodyTextColor: widget.bodyTextColor,
