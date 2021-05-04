@@ -2,41 +2,36 @@ part of link_previewer;
 
 class HorizontalLinkView extends StatelessWidget {
   HorizontalLinkView({
-    Key key,
-    @required this.url,
-    @required this.title,
-    @required this.description,
-    @required this.imageUri,
-    @required this.onTap,
+    Key? key,
+    required this.url,
+    required this.title,
+    required this.description,
+    required this.imageUri,
+    required this.onTap,
     this.titleFontSize,
     this.bodyFontSize,
     this.showTitle,
     this.showBody,
-    this.bodyTextOverflow,
+    this.bodyTextOverflow = TextOverflow.ellipsis,
     this.bodyMaxLines,
     this.titleTextColor,
     this.bodyTextColor,
-    this.borderRadius,
-  })  : assert(imageUri != null),
-        assert(title != null),
-        assert(url != null),
-        assert(description != null),
-        assert(onTap != null),
-        super(key: key);
+    this.borderRadius = 3.0,
+  }) : super(key: key);
 
   final String url;
   final String title;
   final String description;
   final String imageUri;
   final Function onTap;
-  final double titleFontSize;
-  final double bodyFontSize;
-  final bool showTitle;
-  final bool showBody;
+  final double? titleFontSize;
+  final double? bodyFontSize;
+  final bool? showTitle;
+  final bool? showBody;
   final TextOverflow bodyTextOverflow;
-  final int bodyMaxLines;
-  final Color titleTextColor;
-  final Color bodyTextColor;
+  final int? bodyMaxLines;
+  final Color? titleTextColor;
+  final Color? bodyTextColor;
   final double borderRadius;
 
   double computeTitleFontSize(double width) {
@@ -47,11 +42,11 @@ class HorizontalLinkView extends StatelessWidget {
     return size;
   }
 
-  int computeTitleLines(layoutHeight) {
+  int computeTitleLines(double layoutHeight) {
     return layoutHeight >= 100 ? 2 : 1;
   }
 
-  int computeBodyLines(layoutHeight) {
+  int computeBodyLines(double layoutHeight) {
     var lines = 1;
     if (layoutHeight > 40) {
       lines += (layoutHeight - 40.0) ~/ 15.0;
@@ -117,7 +112,7 @@ class HorizontalLinkView extends StatelessWidget {
     });
   }
 
-  Widget _buildTitleContainer(_titleFontSize, _maxLines) {
+  Widget _buildTitleContainer(double? titleFontSize, int maxLines) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(4.0, 2.0, 3.0, 1.0),
       child: Column(
@@ -129,10 +124,10 @@ class HorizontalLinkView extends StatelessWidget {
               title,
               style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  fontSize: _titleFontSize,
+                  fontSize: titleFontSize,
                   color: titleTextColor),
               overflow: TextOverflow.ellipsis,
-              maxLines: _maxLines,
+              maxLines: maxLines,
             ),
           ),
         ],
@@ -140,7 +135,7 @@ class HorizontalLinkView extends StatelessWidget {
     );
   }
 
-  Widget _buildBodyContainer(_bodyFontSize, _maxLines) {
+  Widget _buildBodyContainer(double? bodyFontSize, int maxLines) {
     return Expanded(
       flex: 2,
       child: Padding(
@@ -157,11 +152,9 @@ class HorizontalLinkView extends StatelessWidget {
                   description,
                   textAlign: TextAlign.left,
                   style:
-                      TextStyle(fontSize: _bodyFontSize, color: bodyTextColor),
-                  overflow: bodyTextOverflow == null
-                      ? TextOverflow.ellipsis
-                      : bodyTextOverflow,
-                  maxLines: bodyMaxLines == null ? _maxLines : bodyMaxLines,
+                      TextStyle(fontSize: bodyFontSize, color: bodyTextColor),
+                  overflow: bodyTextOverflow,
+                  maxLines: bodyMaxLines == null ? maxLines : bodyMaxLines,
                 ),
               ),
             ),

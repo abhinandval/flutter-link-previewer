@@ -8,19 +8,21 @@ class WebPageParser {
   }
 
   static Map<dynamic, dynamic> getDataFromResponse(
-      http.Response response, String url) {
-    var requiredAttributes = ['title', 'image'];
-    var data = {};
+    http.Response response,
+    String url,
+  ) {
+    List<String> requiredAttributes = ['title', 'image'];
+    Map data = {};
     if (response.statusCode == 200) {
-      var document = parser.parse(response.body);
-      var openGraphMetaTags = _getOgPropertyData(document);
+      Document document = parser.parse(response.body);
+      List<Element> openGraphMetaTags = _getOgPropertyData(document);
 
       openGraphMetaTags.forEach((element) {
-        var ogTagTitle = element.attributes['property'].split("og:")[1];
-        var ogTagValue = element.attributes['content'];
+        String? ogTagTitle = element.attributes['property']?.split("og:")[1];
+        String? ogTagValue = element.attributes['content'];
         if ((ogTagValue != null && ogTagValue != "") ||
             requiredAttributes.contains(ogTagTitle)) {
-          if (ogTagTitle == "image" && !ogTagValue.startsWith("http")) {
+          if (ogTagTitle == "image" && !ogTagValue!.startsWith("http")) {
             data[ogTagTitle] = "http://" + _extractHost(url) + ogTagValue;
           } else {
             data[ogTagTitle] = ogTagValue;
@@ -57,8 +59,9 @@ class WebPageParser {
   }
 
   static String _scrapeTitle(Document document) {
-    var titleTags = document.head.getElementsByTagName("title");
-    if (titleTags.isNotEmpty && titleTags.first != null) {
+    List<Element> titleTags =
+        document.head?.getElementsByTagName("title") ?? [];
+    if (titleTags.isNotEmpty) {
       return titleTags.first.text;
     }
     return "";
@@ -66,10 +69,9 @@ class WebPageParser {
 
   static String _scrapeDescription(Document document) {
     var meta = document.getElementsByTagName("meta");
-    var description = "";
-    var metaDescription = meta.firstWhere(
-        (e) => e.attributes["name"] == "description",
-        orElse: () => null);
+    String? description = "";
+    var metaDescription =
+        meta.firstWhereOrNull((e) => e.attributes["name"] == "description");
 
     if (metaDescription != null) {
       description = metaDescription.attributes["content"];
@@ -78,18 +80,18 @@ class WebPageParser {
     if (description != null && description != "") {
       return description;
     } else {
-      description = document.head.getElementsByTagName("title")[0].text;
+      description = document.head!.getElementsByTagName("title")[0].text;
     }
     return description;
   }
 
-  static String _scrapeImage(Document document, String url) {
-    var images = document.body.getElementsByTagName("img");
-    var imageSrc = "";
+  static String? _scrapeImage(Document document, String url) {
+    var images = document.body!.getElementsByTagName("img");
+    String? imageSrc = "";
     if (images.length > 0) {
       imageSrc = images[0].attributes["src"];
 
-      if (!imageSrc.startsWith("http")) {
+      if (!imageSrc!.startsWith("http")) {
         imageSrc = "http://" + _extractHost(url) + imageSrc;
       }
     }
@@ -102,15 +104,15 @@ class WebPageParser {
   }
 
   static List<Element> _getOgPropertyData(Document document) {
-    return document.head.querySelectorAll("[property*='og:']");
+    return document.head!.querySelectorAll("[property*='og:']");
   }
 
   static String _addWWWPrefixIfNotExists(String uri) {
-    if (uri == null || uri == "") {
+    if (uri == "") {
       return uri;
     }
 
-    Uri prefixUri;
+    Uri? prefixUri;
     Uri parsedUri = Uri.parse(uri);
     if (!parsedUri.host.startsWith('www')) {
       prefixUri = parsedUri.replace(host: 'www.' + parsedUri.host);

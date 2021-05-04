@@ -1,44 +1,45 @@
 library link_previewer;
 
-import 'package:url_launcher/url_launcher.dart';
-import 'package:http/http.dart' as http;
-import 'package:html/parser.dart' as parser;
-import 'package:html/dom.dart' hide Text;
-import 'package:flutter/material.dart' hide Element;
 import 'dart:async';
 
-part 'parser/web_page_parser.dart';
+import 'package:collection/collection.dart' show IterableExtension;
+import 'package:flutter/material.dart' hide Element;
+import 'package:html/dom.dart' hide Text;
+import 'package:html/parser.dart' as parser;
+import 'package:http/http.dart' as http;
+import 'package:url_launcher/url_launcher.dart';
+
+part 'package:link_previewer/content_direction.dart';
 
 part 'package:link_previewer/horizontal_link_view.dart';
 
 part 'package:link_previewer/vertical_link_preview.dart';
 
-part 'package:link_previewer/content_direction.dart';
+part 'parser/web_page_parser.dart';
 
 class LinkPreviewer extends StatefulWidget {
   LinkPreviewer({
-    Key key,
-    @required this.link,
+    Key? key,
+    required this.link,
     this.titleFontSize,
     this.bodyFontSize,
     this.backgroundColor = Colors.white,
     this.borderColor = Colors.deepOrangeAccent,
     this.titleTextColor = Colors.black,
     this.bodyTextColor = Colors.grey,
-    this.defaultPlaceholderColor,
-    this.borderRadius,
+    this.defaultPlaceholderColor = const Color.fromRGBO(235, 235, 235, 1.0),
+    this.borderRadius = 3.0,
     this.placeholder,
     this.showTitle = true,
     this.showBody = true,
     this.direction = ContentDirection.horizontal,
     this.bodyTextOverflow,
     this.bodyMaxLines,
-  })  : assert(link != null),
-        super(key: key);
+  }) : super(key: key);
 
   final String link;
-  final double titleFontSize;
-  final double bodyFontSize;
+  final double? titleFontSize;
+  final double? bodyFontSize;
   final Color backgroundColor;
   final Color borderColor;
   final Color defaultPlaceholderColor;
@@ -46,21 +47,20 @@ class LinkPreviewer extends StatefulWidget {
   final Color bodyTextColor;
   final double borderRadius;
   final ContentDirection direction;
-  final Widget placeholder;
+  final Widget? placeholder;
   final bool showTitle;
   final bool showBody;
-  final TextOverflow bodyTextOverflow;
-  final int bodyMaxLines;
+  final TextOverflow? bodyTextOverflow;
+  final int? bodyMaxLines;
 
   @override
   _LinkPreviewer createState() => _LinkPreviewer();
 }
 
 class _LinkPreviewer extends State<LinkPreviewer> {
-  Map _metaData;
-  double _height;
-  String _link;
-  Color _placeholderColor;
+  late final Map _metaData;
+  late final double _height;
+  late final String _link;
   bool _failedToLoadImage = false;
 
   @override
@@ -70,9 +70,6 @@ class _LinkPreviewer extends State<LinkPreviewer> {
     if (_link.startsWith("https")) {
       _link = "http" + _link.split("https")[1];
     }
-    _placeholderColor = widget.defaultPlaceholderColor == null
-        ? Color.fromRGBO(235, 235, 235, 1.0)
-        : widget.defaultPlaceholderColor;
     _fetchData();
   }
 
@@ -92,7 +89,7 @@ class _LinkPreviewer extends State<LinkPreviewer> {
     }
   }
 
-  void _validateImageUri(uri) {
+  void _validateImageUri(String uri) {
     precacheImage(NetworkImage(uri), context, onError: (e, stackTrace) {
       setState(() {
         _failedToLoadImage = true;
@@ -100,25 +97,19 @@ class _LinkPreviewer extends State<LinkPreviewer> {
     });
   }
 
-  String _getUriWithPrefix(uri) {
+  String _getUriWithPrefix(String uri) {
     return WebPageParser._addWWWPrefixIfNotExists(uri);
   }
 
-  void _getMetaData(link) async {
+  void _getMetaData(String link) async {
     Map data = await WebPageParser.getData(link);
-    if (data != null) {
-      _validateImageUri(data['image']);
-      setState(() {
-        _metaData = data;
-      });
-    } else {
-      setState(() {
-        _metaData = null;
-      });
-    }
+    _validateImageUri(data['image']);
+    setState(() {
+      _metaData = data;
+    });
   }
 
-  bool isValidUrl(link) {
+  bool isValidUrl(String link) {
     String regexSource =
         "^(https?)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]";
     final regex = RegExp(regexSource);
@@ -131,7 +122,7 @@ class _LinkPreviewer extends State<LinkPreviewer> {
     return false;
   }
 
-  void _launchURL(url) async {
+  void _launchURL(String url) async {
     if (await canLaunch(url)) {
       await launch(url);
     } else {
@@ -141,12 +132,12 @@ class _LinkPreviewer extends State<LinkPreviewer> {
 
   @override
   Widget build(BuildContext context) {
-    _height = _computeHeight(MediaQuery.of(context).size.height);
+    double _height = _computeHeight(MediaQuery.of(context).size.height);
 
-    return _metaData == null
+    return _metaData.isEmpty
         ? widget.placeholder == null
-            ? _buildPlaceHolder(_placeholderColor, _height)
-            : widget.placeholder
+            ? _buildPlaceHolder(widget.defaultPlaceholderColor, _height)
+            : widget.placeholder!
         : _buildLinkContainer();
   }
 
@@ -154,20 +145,18 @@ class _LinkPreviewer extends State<LinkPreviewer> {
     return Container(
       height: defaultHeight,
       child: LayoutBuilder(builder: (context, constraints) {
-        var layoutWidth = constraints.biggest.width;
-        var layoutHeight = constraints.biggest.height;
+        double layoutWidth = constraints.biggest.width;
+        double layoutHeight = constraints.biggest.height;
 
         return Container(
           decoration: new BoxDecoration(
             color: color,
             border: Border.all(
-              color: widget.borderColor == null
-                  ? widget.backgroundColor
-                  : widget.borderColor,
-              width: widget.borderColor == null ? 0.0 : 1.0,
+              color: widget.borderColor,
+              width: 1.0,
             ),
-            borderRadius: BorderRadius.all(Radius.circular(
-                widget.borderRadius == null ? 3.0 : widget.borderRadius)),
+            borderRadius:
+                BorderRadius.all(Radius.circular(widget.borderRadius)),
           ),
           width: layoutWidth,
           height: layoutHeight,
@@ -181,13 +170,10 @@ class _LinkPreviewer extends State<LinkPreviewer> {
       decoration: new BoxDecoration(
         color: widget.backgroundColor,
         border: Border.all(
-          color: widget.borderColor == null
-              ? widget.backgroundColor
-              : widget.borderColor,
-          width: widget.borderColor == null ? 0.0 : 1.0,
+          color: widget.borderColor,
+          width: 1.0,
         ),
-        borderRadius: BorderRadius.all(Radius.circular(
-            widget.borderRadius == null ? 3.0 : widget.borderRadius)),
+        borderRadius: BorderRadius.all(Radius.circular(widget.borderRadius)),
       ),
       height: _height,
       child: _buildLinkView(
@@ -198,12 +184,20 @@ class _LinkPreviewer extends State<LinkPreviewer> {
           _launchURL,
           widget.showTitle,
           widget.showBody,
-          widget.borderRadius == null ? 3.0 : widget.borderRadius),
+          widget.borderRadius),
     );
   }
 
-  Widget _buildLinkView(link, title, description, imageUri, onTap, showTitle,
-      showBody, borderRadius) {
+  Widget _buildLinkView(
+    String link,
+    String title,
+    String description,
+    String imageUri,
+    ValueChanged<String> onTap,
+    bool showTitle,
+    bool showBody,
+    double borderRadius,
+  ) {
     if (widget.direction == ContentDirection.horizontal) {
       return HorizontalLinkView(
         url: link,
@@ -215,7 +209,7 @@ class _LinkPreviewer extends State<LinkPreviewer> {
         onTap: onTap,
         showTitle: showTitle,
         showBody: showBody,
-        bodyTextOverflow: widget.bodyTextOverflow,
+        bodyTextOverflow: widget.bodyTextOverflow!,
         bodyMaxLines: widget.bodyMaxLines,
         titleTextColor: widget.titleTextColor,
         bodyTextColor: widget.bodyTextColor,
@@ -232,7 +226,7 @@ class _LinkPreviewer extends State<LinkPreviewer> {
         onTap: onTap,
         showTitle: showTitle,
         showBody: showBody,
-        bodyTextOverflow: widget.bodyTextOverflow,
+        bodyTextOverflow: widget.bodyTextOverflow!,
         bodyMaxLines: widget.bodyMaxLines,
         titleTextColor: widget.titleTextColor,
         bodyTextColor: widget.bodyTextColor,
