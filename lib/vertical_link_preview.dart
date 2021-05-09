@@ -1,6 +1,18 @@
 part of link_previewer;
 
 class VerticalLinkPreview extends StatelessWidget {
+  final String url;
+  final String title;
+  final String description;
+  final String imageUri;
+  final Function onTap;
+  final bool? showTitle;
+  final bool? showBody;
+  final TextOverflow bodyTextOverflow;
+  final int? bodyMaxLines;
+  final BorderRadius borderRadius;
+  final TextStyle titleTextStyle;
+  final TextStyle bodyTextStyle;
   VerticalLinkPreview({
     Key? key,
     required this.url,
@@ -8,47 +20,14 @@ class VerticalLinkPreview extends StatelessWidget {
     required this.description,
     required this.imageUri,
     required this.onTap,
-    this.titleFontSize,
-    this.bodyFontSize,
+    required this.borderRadius,
+    required this.bodyTextStyle,
+    required this.titleTextStyle,
     this.showTitle,
     this.showBody,
     this.bodyTextOverflow = TextOverflow.fade,
     this.bodyMaxLines,
-    this.titleTextColor,
-    this.bodyTextColor,
-    this.borderRadius = 3.0,
   }) : super(key: key);
-
-  final String url;
-  final String title;
-  final String description;
-  final String imageUri;
-  final Function onTap;
-  final double? titleFontSize;
-  final double? bodyFontSize;
-  final bool? showTitle;
-  final bool? showBody;
-  final TextOverflow bodyTextOverflow;
-  final int? bodyMaxLines;
-  final Color? titleTextColor;
-  final Color? bodyTextColor;
-  final double borderRadius;
-
-  double computeTitleFontSize(double height) {
-    double size = height * 0.13;
-    if (size > 15) {
-      size = 15;
-    }
-    return size;
-  }
-
-  int computeTitleLines(double layoutHeight, double layoutWidth) {
-    return layoutHeight - layoutWidth < 50 ? 1 : 2;
-  }
-
-  int computeBodyLines(double layoutHeight) {
-    return layoutHeight ~/ 60 == 0 ? 1 : layoutHeight ~/ 60;
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -56,12 +35,14 @@ class VerticalLinkPreview extends StatelessWidget {
       var layoutWidth = constraints.biggest.width;
       var layoutHeight = constraints.biggest.height;
 
-      var _titleFontSize = titleFontSize == null
-          ? computeTitleFontSize(layoutHeight)
-          : titleFontSize;
-      var _bodyFontSize = bodyFontSize == null
-          ? computeTitleFontSize(layoutHeight) - 1
-          : bodyFontSize;
+      TextStyle _titleTextStyle = titleTextStyle.copyWith(
+        fontSize: titleTextStyle.fontSize ?? computeTitleFontSize(layoutWidth),
+      );
+
+      TextStyle _bodyTextStyle = bodyTextStyle.copyWith(
+        fontSize:
+            bodyTextStyle.fontSize ?? (computeTitleFontSize(layoutWidth) - 1),
+      );
 
       return InkWell(
           onTap: () => onTap(url),
@@ -70,8 +51,8 @@ class VerticalLinkPreview extends StatelessWidget {
               Expanded(
                 flex: 2,
                 child: ClipRRect(
-                  borderRadius:
-                      BorderRadius.vertical(top: Radius.circular(borderRadius)),
+                  borderRadius: BorderRadius.vertical(
+                      top: Radius.circular(borderRadius.topLeft.x)),
                   child: imageUri == ""
                       ? Container(
                           color: Color.fromRGBO(235, 235, 235, 1.0),
@@ -89,18 +70,52 @@ class VerticalLinkPreview extends StatelessWidget {
               ),
               showTitle == false
                   ? Container()
-                  : _buildTitleContainer(_titleFontSize,
+                  : _buildTitleContainer(_titleTextStyle,
                       computeTitleLines(layoutHeight, layoutWidth)),
               showBody == false
                   ? Container()
                   : _buildBodyContainer(
-                      _bodyFontSize, computeBodyLines(layoutHeight)),
+                      _bodyTextStyle, computeBodyLines(layoutHeight)),
             ],
           ));
     });
   }
 
-  Widget _buildTitleContainer(double? titleFontSize, int maxLines) {
+  int computeBodyLines(double layoutHeight) {
+    return layoutHeight ~/ 60 == 0 ? 1 : layoutHeight ~/ 60;
+  }
+
+  double computeTitleFontSize(double height) {
+    double size = height * 0.13;
+    if (size > 15) {
+      size = 15;
+    }
+    return size;
+  }
+
+  int computeTitleLines(double layoutHeight, double layoutWidth) {
+    return layoutHeight - layoutWidth < 50 ? 1 : 2;
+  }
+
+  Widget _buildBodyContainer(TextStyle textStyle, int maxLines) {
+    return Expanded(
+      flex: 1,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(5.0, 2.0, 5.0, 4.0),
+        child: Container(
+          alignment: Alignment(-1.0, -1.0),
+          child: Text(
+            description,
+            style: textStyle,
+            overflow: bodyTextOverflow,
+            maxLines: bodyMaxLines == null ? maxLines : bodyMaxLines,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTitleContainer(TextStyle textStyle, int maxLines) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(4.0, 1.0, 3.0, 0.0),
       child: Container(
@@ -110,32 +125,11 @@ class VerticalLinkPreview extends StatelessWidget {
           children: <Widget>[
             Text(
               title,
-              style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: titleFontSize,
-                  color: titleTextColor),
+              style: textStyle,
               overflow: TextOverflow.ellipsis,
               maxLines: maxLines,
             ),
           ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildBodyContainer(double? bodyFontSize, int maxLines) {
-    return Expanded(
-      flex: 1,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(5.0, 2.0, 5.0, 4.0),
-        child: Container(
-          alignment: Alignment(-1.0, -1.0),
-          child: Text(
-            description,
-            style: TextStyle(fontSize: bodyFontSize, color: bodyTextColor),
-            overflow: bodyTextOverflow,
-            maxLines: bodyMaxLines == null ? maxLines : bodyMaxLines,
-          ),
         ),
       ),
     );

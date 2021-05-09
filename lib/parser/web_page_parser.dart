@@ -21,7 +21,7 @@ class WebPageParser {
         if ((ogTagValue != null && ogTagValue != "") ||
             requiredAttributes.contains(ogTagTitle)) {
           if (ogTagTitle == "image" && (!ogTagValue!.startsWith("http"))) {
-            data[ogTagTitle] = "https://" + _extractHost(url) + ogTagValue;
+            data[ogTagTitle] = "http://" + _extractHost(url) + ogTagValue;
           } else {
             data[ogTagTitle] = ogTagValue;
           }
@@ -90,7 +90,7 @@ class WebPageParser {
       imageSrc = images[0].attributes["src"] ?? "";
 
       if (!imageSrc.startsWith("http")) {
-        imageSrc = "https://" + _extractHost(url) + imageSrc;
+        imageSrc = "http://" + _extractHost(url) + imageSrc;
       }
     }
     if (imageSrc == "") {

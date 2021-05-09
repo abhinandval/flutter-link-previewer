@@ -19,24 +19,39 @@ class MyApp extends StatelessWidget {
 }
 
 class HomePage extends StatelessWidget {
+  final link =
+      "https://www.wired.com/story/colonial-pipeline-ransomware-attack/";
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('Link Preview Example'),
       ),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          LinkPreviewer(
-            link: "https://www.linkedin.com/feed/",
-            direction: ContentDirection.horizontal,
-          ),
-          LinkPreviewer(
-            link: "https://www.linkedin.com/feed/",
-            direction: ContentDirection.vertical,
-          ),
-        ],
+      body: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            LinkPreviewer(
+              url: link,
+              direction: ContentDirection.horizontal,
+            ),
+            SizedBox(
+              height: 16,
+            ),
+            LinkPreviewer(
+              url: "https://www.linkedin.com/",
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(16),
+                bottomRight: Radius.circular(16),
+              ),
+              borderSide: BorderSide.none,
+              backgroundColor: Colors.greenAccent,
+              direction: ContentDirection.vertical,
+            ),
+          ],
+        ),
       ),
     );
   }
